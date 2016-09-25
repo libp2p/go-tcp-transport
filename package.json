@@ -39,15 +39,15 @@
     },
     {
       "author": "whyrusleeping",
-      "hash": "QmekekLwe4KGWtaeVHr8AfRht25RgdGzLunnQF2gHVi62E",
+      "hash": "QmUDjsP471mkH5F4DoD5jQaTybX7ENU6YDULwQi9Keu3Vi",
       "name": "go-libp2p-transport",
-      "version": "2.1.1"
+      "version": "2.1.2"
     }
   ],
   "gxVersion": "0.4.0",
   "language": "go",
   "license": "MIT",
   "name": "go-tcp-transport",
-  "version": "1.0.0"
+  "version": "1.0.1"
 }
 
