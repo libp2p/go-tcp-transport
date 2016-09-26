@@ -3,7 +3,7 @@ package tcp
 import (
 	"testing"
 
-	ma "github.com/jbenet/go-multiaddr"
+	ma "github.com/multiformats/go-multiaddr"
 
 	utils "github.com/libp2p/go-libp2p-transport/test"
 )
