@@ -48,6 +48,6 @@
   "language": "go",
   "license": "MIT",
   "name": "go-tcp-transport",
-  "version": "1.0.1"
+  "version": "1.0.2"
 }
 
