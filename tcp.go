@@ -193,7 +193,7 @@ func (d *tcpDialer) reuseDial(ctx context.Context, raddr ma.Multiaddr) (manet.Co
 	}
 
 	_ = ctx // TODO: implement DialContext in reuseport
-	con, err := d.rd.Dial(network, netraddr)
+	con, err := d.rd.DialContext(ctx, network, netraddr)
 	if err == nil {
 		logdial["reuseport"] = "success"
 		rpev.Done()
