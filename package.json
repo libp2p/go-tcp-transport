@@ -21,9 +21,9 @@
     },
     {
       "author": "whyrusleeping",
-      "hash": "QmaaC9QMYTQHCbMq3Ebr3uMaAR2ev4AVqMmsJpgQijAZbJ",
+      "hash": "QmREK4tFmkEmrGgYU5cupeRVh71kLAkfjWcRq3krVUWWRq",
       "name": "go-reuseport",
-      "version": "0.0.0"
+      "version": "0.1.4"
     },
     {
       "author": "whyrusleeping",
