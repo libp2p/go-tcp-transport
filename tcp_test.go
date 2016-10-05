@@ -3,9 +3,8 @@ package tcp
 import (
 	"testing"
 
-	ma "github.com/jbenet/go-multiaddr"
-
 	utils "github.com/libp2p/go-libp2p-transport/test"
+	ma "github.com/multiformats/go-multiaddr"
 )
 
 func TestTcpTransport(t *testing.T) {
