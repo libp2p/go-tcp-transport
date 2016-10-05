@@ -42,6 +42,7 @@
   "language": "go",
   "license": "MIT",
   "name": "go-tcp-transport",
-  "version": "1.0.2"
+  "releaseCmd": "git commit -a -m \"gx publish $VERSION\"",
+  "version": "1.1.0"
 }
 
