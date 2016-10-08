@@ -15,9 +15,9 @@
     },
     {
       "author": "whyrusleeping",
-      "hash": "QmREK4tFmkEmrGgYU5cupeRVh71kLAkfjWcRq3krVUWWRq",
+      "hash": "QmeJcz1smiskcJbPRTWpzqnLpD2vYqkNiGHVrckaaWHCLv",
       "name": "go-reuseport",
-      "version": "0.1.4"
+      "version": "0.1.5"
     },
     {
       "author": "whyrusleeping",
@@ -43,6 +43,6 @@
   "license": "MIT",
   "name": "go-tcp-transport",
   "releaseCmd": "git commit -a -m \"gx publish $VERSION\"",
-  "version": "1.1.0"
+  "version": "1.1.1"
 }
 
