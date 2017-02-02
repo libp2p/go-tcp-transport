@@ -9,7 +9,7 @@
   "gxDependencies": [
     {
       "author": "whyrusleeping",
-      "hash": "QmTMy4hVSY28DdwJ9kBz6y7q6MuioFzPcpM3Ma3aPjo1i3",
+      "hash": "QmayjCepfH9eZJE3E6uPafmx22tdrsNva5CstRB86kVh9a",
       "name": "go-libp2p-loggables",
       "version": "1.1.1"
     },
@@ -21,19 +21,19 @@
     },
     {
       "author": "whyrusleeping",
-      "hash": "QmT6Cp31887FpAc25z25YHgpFJohZedrYLWPPspRtj1Brp",
+      "hash": "QmVCNGTyD4EkvNYaAp253uMQ9Rjsjy2oGMvcdJJUoVRfja",
       "name": "go-multiaddr-net",
       "version": "1.5.1"
     },
     {
       "author": "whyrusleeping",
-      "hash": "QmQkdkvXE4oKXAcLZK5d7Zc6xvyukQc8WVjX7QvxDJ7hJj",
+      "hash": "QmYjJnSTfXWhYL2cV1xFphPqjqowJqH7ZKLA1As8QrPHbn",
       "name": "mafmt",
       "version": "1.1.2"
     },
     {
       "author": "whyrusleeping",
-      "hash": "QmWMia2fBVBesMerbtApQY7Tj2sgTaziveBACfCRUcv45f",
+      "hash": "QmR4YrM1DdvYmox249o8aday8oiotkcsT1Qzv42ujPEQDb",
       "name": "go-libp2p-transport",
       "version": "2.2.1"
     }
@@ -43,6 +43,6 @@
   "license": "MIT",
   "name": "go-tcp-transport",
   "releaseCmd": "git commit -a -m \"gx publish $VERSION\"",
-  "version": "1.1.1"
+  "version": "1.1.2"
 }
 
