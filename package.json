@@ -9,7 +9,7 @@
   "gxDependencies": [
     {
       "author": "whyrusleeping",
-      "hash": "QmTcfnDHimxBJqx6utpnWqVHdvyquXgkwAvYt4zMaJMKS2",
+      "hash": "QmXs1igHHEaUmMxKtbP8Z9wTjitQ75sqxaKQP4QgnLN4nn",
       "name": "go-libp2p-loggables",
       "version": "1.1.1"
     },
@@ -43,6 +43,6 @@
   "license": "MIT",
   "name": "go-tcp-transport",
   "releaseCmd": "git commit -a -m \"gx publish $VERSION\"",
-  "version": "1.1.5"
+  "version": "1.1.6"
 }
 
