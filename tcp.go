@@ -124,6 +124,7 @@ type tcpDialer struct {
 
 	rd       reuseport.Dialer
 	madialer manet.Dialer
+	pattern  mafmt.Pattern
 
 	transport tpt.Transport
 }
@@ -133,6 +134,15 @@ func (t *TcpTransport) newTcpDialer(base manet.Dialer, laddr ma.Multiaddr, doReu
 	la, err := manet.ToNetAddr(laddr)
 	if err != nil {
 		return nil, err // something wrong with laddr.
+	}
+
+	var pattern mafmt.Pattern
+	if TCP4.Matches(laddr) {
+		pattern = TCP4
+	} else if TCP6.Matches(laddr) {
+		pattern = TCP6
+	} else {
+		return nil, fmt.Errorf("local addr did not match TCP4 or TCP6: %s", laddr)
 	}
 
 	if doReuse && ReuseportIsAvailable() {
@@ -149,6 +159,7 @@ func (t *TcpTransport) newTcpDialer(base manet.Dialer, laddr ma.Multiaddr, doReu
 			rd:        rd,
 			madialer:  base,
 			transport: t,
+			pattern:   pattern,
 		}, nil
 	}
 
@@ -165,6 +176,13 @@ func (d *tcpDialer) Dial(raddr ma.Multiaddr) (tpt.Conn, error) {
 }
 
 func (d *tcpDialer) DialContext(ctx context.Context, raddr ma.Multiaddr) (tpt.Conn, error) {
+	if raddr == nil {
+		zaddr, err := ma.NewMultiaddr("/ip4/0.0.0.0/tcp/0")
+		if err != nil {
+			return nil, err
+		}
+		raddr = zaddr
+	}
 	var c manet.Conn
 	var err error
 	if d.doReuse {
@@ -214,8 +232,11 @@ func (d *tcpDialer) reuseDial(ctx context.Context, raddr ma.Multiaddr) (manet.Co
 	return d.madialer.DialContext(ctx, raddr)
 }
 
+var TCP4 = mafmt.And(mafmt.Base(ma.P_IP4), mafmt.Base(ma.P_TCP))
+var TCP6 = mafmt.And(mafmt.Base(ma.P_IP6), mafmt.Base(ma.P_TCP))
+
 func (d *tcpDialer) Matches(a ma.Multiaddr) bool {
-	return mafmt.TCP.Matches(a)
+	return d.pattern.Matches(a)
 }
 
 type tcpListener struct {
