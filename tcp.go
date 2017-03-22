@@ -36,6 +36,13 @@ func NewTCPTransport() *TcpTransport {
 }
 
 func (t *TcpTransport) Dialer(laddr ma.Multiaddr, opts ...tpt.DialOpt) (tpt.Dialer, error) {
+	if laddr == nil {
+		zaddr, err := ma.NewMultiaddr("/ip4/0.0.0.0/tcp/0")
+		if err != nil {
+			return nil, err
+		}
+		laddr = zaddr
+	}
 	t.dlock.Lock()
 	defer t.dlock.Unlock()
 	s := laddr.String()
@@ -176,13 +183,6 @@ func (d *tcpDialer) Dial(raddr ma.Multiaddr) (tpt.Conn, error) {
 }
 
 func (d *tcpDialer) DialContext(ctx context.Context, raddr ma.Multiaddr) (tpt.Conn, error) {
-	if raddr == nil {
-		zaddr, err := ma.NewMultiaddr("/ip4/0.0.0.0/tcp/0")
-		if err != nil {
-			return nil, err
-		}
-		raddr = zaddr
-	}
 	var c manet.Conn
 	var err error
 	if d.doReuse {
