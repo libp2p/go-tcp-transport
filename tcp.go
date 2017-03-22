@@ -9,7 +9,6 @@ import (
 
 	logging "github.com/ipfs/go-log"
 	reuseport "github.com/jbenet/go-reuseport"
-	lgbl "github.com/libp2p/go-libp2p-loggables"
 	tpt "github.com/libp2p/go-libp2p-transport"
 	ma "github.com/multiformats/go-multiaddr"
 	manet "github.com/multiformats/go-multiaddr-net"
@@ -202,32 +201,26 @@ func (d *tcpDialer) DialContext(ctx context.Context, raddr ma.Multiaddr) (tpt.Co
 }
 
 func (d *tcpDialer) reuseDial(ctx context.Context, raddr ma.Multiaddr) (manet.Conn, error) {
-	logdial := lgbl.Dial("conn", "", "", d.laddr, raddr)
-	rpev := log.EventBegin(ctx, "tptDialReusePort", logdial)
-
 	network, netraddr, err := manet.DialArgs(raddr)
 	if err != nil {
 		return nil, err
 	}
 
-	_ = ctx // TODO: implement DialContext in reuseport
+	rpev := log.EventBegin(ctx, "tptDialReusePort", logging.LoggableMap{
+		"raddr": raddr,
+	})
+
 	con, err := d.rd.DialContext(ctx, network, netraddr)
 	if err == nil {
-		logdial["reuseport"] = "success"
 		rpev.Done()
 		return manet.WrapNetConn(con)
 	}
+	rpev.SetError(err)
+	rpev.Done()
 
 	if !ReuseErrShouldRetry(err) {
-		logdial["reuseport"] = "failure"
-		logdial["error"] = err
-		rpev.Done()
 		return nil, err
 	}
-
-	logdial["reuseport"] = "retry"
-	logdial["error"] = err
-	rpev.Done()
 
 	return d.madialer.DialContext(ctx, raddr)
 }

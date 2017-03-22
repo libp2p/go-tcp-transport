@@ -9,12 +9,6 @@
   "gxDependencies": [
     {
       "author": "whyrusleeping",
-      "hash": "QmXs1igHHEaUmMxKtbP8Z9wTjitQ75sqxaKQP4QgnLN4nn",
-      "name": "go-libp2p-loggables",
-      "version": "1.1.1"
-    },
-    {
-      "author": "whyrusleeping",
       "hash": "QmeJcz1smiskcJbPRTWpzqnLpD2vYqkNiGHVrckaaWHCLv",
       "name": "go-reuseport",
       "version": "0.1.5"
