@@ -172,6 +172,7 @@ func (t *TcpTransport) newTcpDialer(base manet.Dialer, laddr ma.Multiaddr, doReu
 	return &tcpDialer{
 		doReuse:   false,
 		laddr:     laddr,
+		pattern:   pattern,
 		madialer:  base,
 		transport: t,
 	}, nil
