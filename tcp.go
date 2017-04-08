@@ -25,6 +25,8 @@ type TcpTransport struct {
 	listeners map[string]tpt.Listener
 }
 
+var _ tpt.Transport = &TcpTransport{}
+
 // NewTCPTransport creates a tcp transport object that tracks dialers and listeners
 // created. It represents an entire tcp stack (though it might not necessarily be)
 func NewTCPTransport() *TcpTransport {
@@ -135,6 +137,8 @@ type tcpDialer struct {
 	transport tpt.Transport
 }
 
+var _ tpt.Dialer = &tcpDialer{}
+
 func (t *TcpTransport) newTcpDialer(base manet.Dialer, laddr ma.Multiaddr, doReuse bool) (*tcpDialer, error) {
 	// get the local net.Addr manually
 	la, err := manet.ToNetAddr(laddr)
@@ -237,6 +241,8 @@ type tcpListener struct {
 	list      manet.Listener
 	transport tpt.Transport
 }
+
+var _ tpt.Listener = &tcpListener{}
 
 func (d *tcpListener) Accept() (tpt.Conn, error) {
 	c, err := d.list.Accept()
