@@ -199,9 +199,9 @@ func (d *tcpDialer) DialContext(ctx context.Context, raddr ma.Multiaddr) (tpt.Co
 		return nil, err
 	}
 
-	return &tpt.ConnWrap{
+	return &tcpConn{
 		Conn: c,
-		Tpt:  d.transport,
+		t:    d.transport,
 	}, nil
 }
 
@@ -250,9 +250,9 @@ func (d *tcpListener) Accept() (tpt.Conn, error) {
 		return nil, err
 	}
 
-	return &tpt.ConnWrap{
+	return &tcpConn{
 		Conn: c,
-		Tpt:  d.transport,
+		t:    d.transport,
 	}, nil
 }
 
@@ -270,4 +270,16 @@ func (t *tcpListener) NetListener() net.Listener {
 
 func (d *tcpListener) Close() error {
 	return d.list.Close()
+}
+
+type tcpConn struct {
+	manet.Conn
+	t tpt.Transport
+}
+
+var _ tpt.Conn = &tcpConn{}
+var _ tpt.SingleStreamConn = &tcpConn{}
+
+func (c *tcpConn) Transport() tpt.Transport {
+	return c.t
 }
