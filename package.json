@@ -9,9 +9,9 @@
   "gxDependencies": [
     {
       "author": "whyrusleeping",
-      "hash": "QmeJcz1smiskcJbPRTWpzqnLpD2vYqkNiGHVrckaaWHCLv",
+      "hash": "QmVFEAZHvDvgFhGVmySEfejrzgBmWyHPdJhC3jDHDQjtzg",
       "name": "go-reuseport",
-      "version": "0.1.5"
+      "version": "0.1.6"
     },
     {
       "author": "whyrusleeping",
@@ -48,6 +48,6 @@
   "license": "MIT",
   "name": "go-tcp-transport",
   "releaseCmd": "git commit -a -m \"gx publish $VERSION\"",
-  "version": "1.2.1"
+  "version": "1.2.2"
 }
 
