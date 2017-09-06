@@ -275,7 +275,7 @@ type tcpConn struct {
 }
 
 var _ tpt.Conn = &tcpConn{}
-var _ tpt.SingleStreamConn = &tcpConn{}
+var _ tpt.DuplexConn = &tcpConn{}
 
 func (c *tcpConn) Transport() tpt.Transport {
 	return c.t
