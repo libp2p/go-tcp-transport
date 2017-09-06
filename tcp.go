@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net"
 	"sync"
-	"time"
 
 	logging "github.com/ipfs/go-log"
 	reuseport "github.com/jbenet/go-reuseport"
@@ -56,8 +55,6 @@ func (t *TcpTransport) Dialer(laddr ma.Multiaddr, opts ...tpt.DialOpt) (tpt.Dial
 	var doReuse bool
 	for _, o := range opts {
 		switch o := o.(type) {
-		case tpt.TimeoutOpt:
-			base.Timeout = time.Duration(o)
 		case tpt.ReuseportOpt:
 			doReuse = bool(o)
 		default:
