@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net"
 	"sync"
-	"time"
 
 	logging "github.com/ipfs/go-log"
 	reuseport "github.com/jbenet/go-reuseport"
@@ -24,6 +23,8 @@ type TcpTransport struct {
 	llock     sync.Mutex
 	listeners map[string]tpt.Listener
 }
+
+var _ tpt.Transport = &TcpTransport{}
 
 // NewTCPTransport creates a tcp transport object that tracks dialers and listeners
 // created. It represents an entire tcp stack (though it might not necessarily be)
@@ -54,8 +55,6 @@ func (t *TcpTransport) Dialer(laddr ma.Multiaddr, opts ...tpt.DialOpt) (tpt.Dial
 	var doReuse bool
 	for _, o := range opts {
 		switch o := o.(type) {
-		case tpt.TimeoutOpt:
-			base.Timeout = time.Duration(o)
 		case tpt.ReuseportOpt:
 			doReuse = bool(o)
 		default:
@@ -135,6 +134,8 @@ type tcpDialer struct {
 	transport tpt.Transport
 }
 
+var _ tpt.Dialer = &tcpDialer{}
+
 func (t *TcpTransport) newTcpDialer(base manet.Dialer, laddr ma.Multiaddr, doReuse bool) (*tcpDialer, error) {
 	// get the local net.Addr manually
 	la, err := manet.ToNetAddr(laddr)
@@ -195,9 +196,9 @@ func (d *tcpDialer) DialContext(ctx context.Context, raddr ma.Multiaddr) (tpt.Co
 		return nil, err
 	}
 
-	return &tpt.ConnWrap{
+	return &tcpConn{
 		Conn: c,
-		Tpt:  d.transport,
+		t:    d.transport,
 	}, nil
 }
 
@@ -238,15 +239,17 @@ type tcpListener struct {
 	transport tpt.Transport
 }
 
+var _ tpt.Listener = &tcpListener{}
+
 func (d *tcpListener) Accept() (tpt.Conn, error) {
 	c, err := d.list.Accept()
 	if err != nil {
 		return nil, err
 	}
 
-	return &tpt.ConnWrap{
+	return &tcpConn{
 		Conn: c,
-		Tpt:  d.transport,
+		t:    d.transport,
 	}, nil
 }
 
@@ -264,4 +267,16 @@ func (t *tcpListener) NetListener() net.Listener {
 
 func (d *tcpListener) Close() error {
 	return d.list.Close()
+}
+
+type tcpConn struct {
+	manet.Conn
+	t tpt.Transport
+}
+
+var _ tpt.Conn = &tcpConn{}
+var _ tpt.DuplexConn = &tcpConn{}
+
+func (c *tcpConn) Transport() tpt.Transport {
+	return c.t
 }
