@@ -9,9 +9,9 @@
   "gxDependencies": [
     {
       "author": "whyrusleeping",
-      "hash": "QmVFEAZHvDvgFhGVmySEfejrzgBmWyHPdJhC3jDHDQjtzg",
+      "hash": "QmS4L8WB9RLZLu9YbS19cHJVjQnuvTyGaGKs75DtmX4Jyo",
       "name": "go-reuseport",
-      "version": "0.1.6"
+      "version": "0.1.7"
     },
     {
       "author": "whyrusleeping",
@@ -27,9 +27,9 @@
     },
     {
       "author": "whyrusleeping",
-      "hash": "QmYcK2kPkJmj9GMxKvLhD4REtAkeuaN8sqDEJePmEqHQnp",
+      "hash": "Qme2XMfKbWzzYd92YvA1qnFMe3pGDR86j5BcFtx4PwdRvr",
       "name": "go-libp2p-transport",
-      "version": "3.0.0"
+      "version": "2.2.9"
     },
     {
       "hash": "QmSpJByNKFX1sCsHBEp3R73FL4NF6FnQTEGyNAXHm2GS52",
@@ -48,6 +48,6 @@
   "license": "MIT",
   "name": "go-tcp-transport",
   "releaseCmd": "git commit -a -m \"gx publish $VERSION\"",
-  "version": "2.0.0"
+  "version": "1.2.4"
 }
 
