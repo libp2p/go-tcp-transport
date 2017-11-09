@@ -9,9 +9,9 @@
   "gxDependencies": [
     {
       "author": "whyrusleeping",
-      "hash": "QmS4L8WB9RLZLu9YbS19cHJVjQnuvTyGaGKs75DtmX4Jyo",
+      "hash": "QmQMdVT3PHEhMbdkANAqjpEmyUpVZEEzZyougpCSYqcjre",
       "name": "go-reuseport",
-      "version": "0.1.7"
+      "version": "0.1.9"
     },
     {
       "author": "whyrusleeping",

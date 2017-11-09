@@ -7,7 +7,7 @@ import (
 	"sync"
 
 	logging "github.com/ipfs/go-log"
-	reuseport "github.com/jbenet/go-reuseport"
+	reuseport "github.com/libp2p/go-reuseport"
 	tpt "github.com/libp2p/go-libp2p-transport"
 	ma "github.com/multiformats/go-multiaddr"
 	manet "github.com/multiformats/go-multiaddr-net"
