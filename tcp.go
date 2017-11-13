@@ -5,16 +5,20 @@ import (
 	"fmt"
 	"net"
 	"sync"
+	"time"
 
 	logging "github.com/ipfs/go-log"
-	reuseport "github.com/libp2p/go-reuseport"
 	tpt "github.com/libp2p/go-libp2p-transport"
+	reuseport "github.com/libp2p/go-reuseport"
 	ma "github.com/multiformats/go-multiaddr"
 	manet "github.com/multiformats/go-multiaddr-net"
 	mafmt "github.com/whyrusleeping/mafmt"
 )
 
 var log = logging.Logger("tcp-tpt")
+
+// DialTimeout is the amount of time to wait for a TCP handshake to complete.
+var DialTimeout = 10 * time.Second
 
 type TcpTransport struct {
 	dlock   sync.Mutex
@@ -183,6 +187,9 @@ func (d *tcpDialer) Dial(raddr ma.Multiaddr) (tpt.Conn, error) {
 func (d *tcpDialer) DialContext(ctx context.Context, raddr ma.Multiaddr) (tpt.Conn, error) {
 	var c manet.Conn
 	var err error
+	ctx, cancel := context.WithTimeout(ctx, DialTimeout)
+	defer cancel()
+
 	if d.doReuse {
 		c, err = d.reuseDial(ctx, raddr)
 	} else {
