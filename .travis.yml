@@ -7,8 +7,6 @@ language: go
 go:
     - 1.9.x
 
-install: true
-
 before_install:
   - make deps
 
