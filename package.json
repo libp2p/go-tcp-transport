@@ -27,9 +27,9 @@
     },
     {
       "author": "whyrusleeping",
-      "hash": "QmQGRkVSA5vTXt9WpJ6nBGnrvq9zRNsfjoNPq8uQrhnBoq",
+      "hash": "QmZE4uDRWo12UWKZa65CQLZR4t3jkmWc1ZdA1fBzT3XQEx",
       "name": "go-libp2p-transport",
-      "version": "2.2.10"
+      "version": "2.2.11"
     },
     {
       "hash": "QmSpJByNKFX1sCsHBEp3R73FL4NF6FnQTEGyNAXHm2GS52",
