@@ -52,12 +52,6 @@ func (t *TcpTransport) Dialer(laddr ma.Multiaddr, opts ...tpt.DialOpt) (tpt.Dial
 	}
 	var base manet.Dialer
 
-	la, err := manet.ToNetAddr(laddr)
-	if err != nil {
-		return nil, err // something wrong with laddr.
-	}
-	base.Dialer.LocalAddr = la
-
 	var doReuse bool
 	for _, o := range opts {
 		switch o := o.(type) {
@@ -143,6 +137,12 @@ type tcpDialer struct {
 var _ tpt.Dialer = &tcpDialer{}
 
 func (t *TcpTransport) newTcpDialer(base manet.Dialer, laddr ma.Multiaddr, doReuse bool) (*tcpDialer, error) {
+	// get the local net.Addr manually
+	la, err := manet.ToNetAddr(laddr)
+	if err != nil {
+		return nil, err // something wrong with laddr.
+	}
+
 	var pattern mafmt.Pattern
 	if TCP4.Matches(laddr) {
 		pattern = TCP4
@@ -154,7 +154,10 @@ func (t *TcpTransport) newTcpDialer(base manet.Dialer, laddr ma.Multiaddr, doReu
 
 	if doReuse && ReuseportIsAvailable() {
 		rd := reuseport.Dialer{
-			D: base.Dialer,
+			D: net.Dialer{
+				LocalAddr: la,
+				Timeout:   base.Timeout,
+			},
 		}
 
 		return &tcpDialer{
