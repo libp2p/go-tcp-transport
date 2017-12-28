@@ -50,8 +50,6 @@ func (t *TcpTransport) Dialer(laddr ma.Multiaddr, opts ...tpt.DialOpt) (tpt.Dial
 	if found {
 		return d, nil
 	}
-	var base manet.Dialer
-
 	var doReuse bool
 	for _, o := range opts {
 		switch o := o.(type) {
@@ -62,7 +60,7 @@ func (t *TcpTransport) Dialer(laddr ma.Multiaddr, opts ...tpt.DialOpt) (tpt.Dial
 		}
 	}
 
-	tcpd, err := t.newTcpDialer(base, laddr, doReuse)
+	tcpd, err := t.newTcpDialer(laddr, doReuse)
 	if err != nil {
 		return nil, err
 	}
@@ -136,11 +134,23 @@ type tcpDialer struct {
 
 var _ tpt.Dialer = &tcpDialer{}
 
-func (t *TcpTransport) newTcpDialer(base manet.Dialer, laddr ma.Multiaddr, doReuse bool) (*tcpDialer, error) {
-	// get the local net.Addr manually
-	la, err := manet.ToNetAddr(laddr)
+func maddrToTcp(addr ma.Multiaddr) (*net.TCPAddr, error) {
+	la, err := manet.ToNetAddr(addr)
 	if err != nil {
-		return nil, err // something wrong with laddr.
+		return nil, err // something wrong with addr.
+	}
+	latcp, ok := la.(*net.TCPAddr)
+	if !ok {
+		return nil, fmt.Errorf("not a tcp multiaddr: %s", addr)
+	}
+	return latcp, nil
+}
+
+func (t *TcpTransport) newTcpDialer(laddr ma.Multiaddr, doReuse bool) (*tcpDialer, error) {
+	// get the local net.Addr manually
+	la, err := maddrToTcp(laddr)
+	if err != nil {
+		return nil, err
 	}
 
 	var pattern mafmt.Pattern
@@ -152,31 +162,30 @@ func (t *TcpTransport) newTcpDialer(base manet.Dialer, laddr ma.Multiaddr, doReu
 		return nil, fmt.Errorf("local addr did not match TCP4 or TCP6: %s", laddr)
 	}
 
-	if doReuse && ReuseportIsAvailable() {
-		rd := reuseport.Dialer{
-			D: net.Dialer{
-				LocalAddr: la,
-				Timeout:   base.Timeout,
-			},
-		}
+	// Ignore the port when constructing the default (non-reuseport) dialer.
+	labase := *la
+	labase.Port = 0
 
-		return &tcpDialer{
-			doReuse:   true,
-			laddr:     laddr,
-			rd:        rd,
-			madialer:  base,
-			transport: t,
-			pattern:   pattern,
-		}, nil
+	dialer := &tcpDialer{
+		laddr:   laddr,
+		pattern: pattern,
+		madialer: manet.Dialer{
+			Dialer: net.Dialer{
+				LocalAddr: &labase,
+			},
+		},
+		transport: t,
 	}
 
-	return &tcpDialer{
-		doReuse:   false,
-		laddr:     laddr,
-		pattern:   pattern,
-		madialer:  base,
-		transport: t,
-	}, nil
+	if doReuse && ReuseportIsAvailable() {
+		dialer.doReuse = true
+		dialer.rd = reuseport.Dialer{
+			D: net.Dialer{
+				LocalAddr: la,
+			},
+		}
+	}
+	return dialer, nil
 }
 
 func (d *tcpDialer) Dial(raddr ma.Multiaddr) (tpt.Conn, error) {
