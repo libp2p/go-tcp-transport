@@ -3,59 +3,50 @@ package tcp
 import (
 	"testing"
 
-	tpt "github.com/libp2p/go-libp2p-transport"
+	insecure "github.com/libp2p/go-conn-security/insecure"
+	tptu "github.com/libp2p/go-libp2p-transport-upgrader"
 	utils "github.com/libp2p/go-libp2p-transport/test"
 	ma "github.com/multiformats/go-multiaddr"
+	mplex "github.com/whyrusleeping/go-smux-multiplex"
 )
 
 func TestTcpTransport(t *testing.T) {
-	ta := NewTCPTransport()
-	tb := NewTCPTransport()
+	for i := 0; i < 2; i++ {
+		ta := NewTCPTransport(&tptu.Upgrader{
+			Secure: insecure.New("peerA"),
+			Muxer:  new(mplex.Transport),
+		})
+		tb := NewTCPTransport(&tptu.Upgrader{
+			Secure: insecure.New("peerB"),
+			Muxer:  new(mplex.Transport),
+		})
 
-	zero := "/ip4/127.0.0.1/tcp/0"
-	utils.SubtestTransport(t, ta, tb, zero)
+		zero := "/ip4/127.0.0.1/tcp/0"
+		utils.SubtestTransport(t, ta, tb, zero, "peerA")
+
+		envReuseportVal = false
+	}
+	envReuseportVal = true
 }
 
 func TestTcpTransportCantListenUtp(t *testing.T) {
-	utpa, err := ma.NewMultiaddr("/ip4/127.0.0.1/udp/0/utp")
-	if err != nil {
-		t.Fatal(err)
-	}
+	for i := 0; i < 2; i++ {
+		utpa, err := ma.NewMultiaddr("/ip4/127.0.0.1/udp/0/utp")
+		if err != nil {
+			t.Fatal(err)
+		}
 
-	tpt := NewTCPTransport()
-	_, err = tpt.Listen(utpa)
-	if err == nil {
-		t.Fatal("shouldnt be able to listen on utp addr with tcp transport")
-	}
-}
+		tpt := NewTCPTransport(&tptu.Upgrader{
+			Secure: insecure.New("peerB"),
+			Muxer:  new(mplex.Transport),
+		})
 
-func TestCorrectIPVersionMatching(t *testing.T) {
-	ta := NewTCPTransport()
+		_, err = tpt.Listen(utpa)
+		if err == nil {
+			t.Fatal("shouldnt be able to listen on utp addr with tcp transport")
+		}
 
-	addr4, err := ma.NewMultiaddr("/ip4/0.0.0.0/tcp/0")
-	if err != nil {
-		t.Fatal(err)
+		envReuseportVal = false
 	}
-	addr6, err := ma.NewMultiaddr("/ip6/::1/tcp/0")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	d4, err := ta.Dialer(addr4, tpt.ReuseportOpt(true))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	d6, err := ta.Dialer(addr6, tpt.ReuseportOpt(true))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if d4.Matches(addr6) {
-		t.Fatal("tcp4 dialer should not match ipv6 address")
-	}
-
-	if d6.Matches(addr4) {
-		t.Fatal("tcp4 dialer should not match ipv6 address")
-	}
+	envReuseportVal = true
 }
