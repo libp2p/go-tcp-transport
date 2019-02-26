@@ -15,21 +15,21 @@
     },
     {
       "author": "whyrusleeping",
-      "hash": "QmZcLBXKaFe8ND5YHPkJRAwmhJGrVsi1JqDZNyJ4nRK5Mj",
+      "hash": "Qmc85NSvmSG4Frn9Vb2cBc1rMyULH6D3TNVEfCzSKoUpip",
       "name": "go-multiaddr-net",
-      "version": "1.7.1"
+      "version": "1.7.2"
     },
     {
       "author": "whyrusleeping",
-      "hash": "QmYW5GSNZboYmtWWhzYr4yS3WDAuettAMh3iDLn5nGvwtc",
+      "hash": "QmUrZZavcArYChpibtP8KgQXsAEpvgzUk73B2oj3HLbWc4",
       "name": "mafmt",
-      "version": "1.2.10"
+      "version": "1.2.11"
     },
     {
       "author": "whyrusleeping",
-      "hash": "QmTJ6xe8A2oSA1kSvAbpvK1AvciBzNkuTST9sEigtm8TMh",
+      "hash": "QmNQWMWWBmkAcaVEspSNwYB95axzKFhYTdqZtABA2zXoPu",
       "name": "go-libp2p-transport",
-      "version": "3.0.26"
+      "version": "3.0.27"
     },
     {
       "hash": "QmbkT7eMTyXfpeyB3ZMxxcxg7XH8t6uXp49jqzz4HB7BGF",
@@ -38,27 +38,27 @@
     },
     {
       "author": "multiformats",
-      "hash": "QmNTCey11oxhb1AxDnQBRHtdhap6Ctud872NjAYPYYXPuc",
+      "hash": "QmTZBfrPJmjWsCvHEtX5FE6KimVJhsJg5sBbqEFYf4UZtL",
       "name": "go-multiaddr",
-      "version": "1.4.0"
+      "version": "1.4.1"
     },
     {
       "author": "Stebalien",
-      "hash": "QmdEByBKgZYNCLyFg5Wm9eBWviqZvJNXLBAWU876LfvAjn",
+      "hash": "QmPRoHqULmP4MuKAN5EFaJ64MLpeMY8cny2318xDBDmmkp",
       "name": "go-conn-security",
-      "version": "0.1.27"
+      "version": "0.1.28"
     },
     {
       "author": "stebalien",
-      "hash": "QmXmG9PteVgm8CTnKAxFaMpZTfpp1ZegaYDkKm6fBSMstv",
+      "hash": "QmTmbamDjDWgHe8qeMt7ZpaeNpTj349JpFKuwTF321XavT",
       "name": "go-reuseport-transport",
-      "version": "0.2.2"
+      "version": "0.2.3"
     },
     {
       "author": "steb",
-      "hash": "QmVQiWpN6mNkyfaJRFryT5SQ382i7qXKhePaTXVHUuRcLK",
+      "hash": "QmNjhxwzKp9uB1T2p4PBW3xi7pboJ7iXKvAHQW92ayqAm2",
       "name": "go-libp2p-transport-upgrader",
-      "version": "0.1.26"
+      "version": "0.1.27"
     },
     {
       "author": "whyrusleeping",
@@ -78,6 +78,6 @@
   "license": "MIT",
   "name": "go-tcp-transport",
   "releaseCmd": "git commit -a -m \"gx publish $VERSION\"",
-  "version": "2.0.26"
+  "version": "2.0.27"
 }
 
