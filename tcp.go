@@ -23,9 +23,11 @@ var log = logging.Logger("tcp-tpt")
 
 // try to set linger on the connection, if possible.
 func tryLinger(conn net.Conn, sec int) {
-	if lingerConn, ok := conn.(interface {
+	type canLinger interface {
 		SetLinger(int) error
-	}); ok {
+	}
+
+	if lingerConn, ok := conn.(canLinger); ok {
 		_ = lingerConn.SetLinger(sec)
 	}
 }
