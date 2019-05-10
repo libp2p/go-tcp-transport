@@ -32,6 +32,16 @@ func tryLinger(conn net.Conn, sec int) {
 	}
 }
 
+func tryNagle(conn net.Conn) {
+	type canNagle interface {
+		SetNoDelay(bool) error
+	}
+
+	if nagleConn, ok := conn.(canNagle); ok {
+		_ = nagleConn.SetNoDelay(false)
+	}
+}
+
 type lingerListener struct {
 	manet.Listener
 	sec int
@@ -43,6 +53,7 @@ func (ll *lingerListener) Accept() (manet.Conn, error) {
 		return nil, err
 	}
 	tryLinger(c, ll.sec)
+	tryNagle(c)
 	return c, nil
 }
 
