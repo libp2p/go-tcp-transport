@@ -4,10 +4,10 @@ import (
 	"testing"
 
 	insecure "github.com/libp2p/go-conn-security/insecure"
+	mplex "github.com/libp2p/go-libp2p-mplex"
 	tptu "github.com/libp2p/go-libp2p-transport-upgrader"
 	utils "github.com/libp2p/go-libp2p-transport/test"
 	ma "github.com/multiformats/go-multiaddr"
-	mplex "github.com/whyrusleeping/go-smux-multiplex"
 )
 
 func TestTcpTransport(t *testing.T) {
