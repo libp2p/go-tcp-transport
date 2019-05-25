@@ -8,7 +8,7 @@ import (
 	tptu "github.com/libp2p/go-libp2p-transport-upgrader"
 
 	ttransport "github.com/libp2p/go-libp2p-testing/suites/transport"
-	
+
 	ma "github.com/multiformats/go-multiaddr"
 )
 
