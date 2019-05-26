@@ -3,10 +3,12 @@ package tcp
 import (
 	"testing"
 
-	insecure "github.com/libp2p/go-conn-security/insecure"
+	"github.com/libp2p/go-libp2p-core/sec/insecure"
 	mplex "github.com/libp2p/go-libp2p-mplex"
 	tptu "github.com/libp2p/go-libp2p-transport-upgrader"
-	utils "github.com/libp2p/go-libp2p-transport/test"
+
+	ttransport "github.com/libp2p/go-libp2p-testing/suites/transport"
+
 	ma "github.com/multiformats/go-multiaddr"
 )
 
@@ -22,7 +24,7 @@ func TestTcpTransport(t *testing.T) {
 		})
 
 		zero := "/ip4/127.0.0.1/tcp/0"
-		utils.SubtestTransport(t, ta, tb, zero, "peerA")
+		ttransport.SubtestTransport(t, ta, tb, zero, "peerA")
 
 		envReuseportVal = false
 	}
