@@ -119,8 +119,8 @@ in NAT traversal by only requiring one port to be accessible for many
 connections.
 
 The reuseport functionality is provided by a seperate module,
-[go-reuseport-transport](github.com/libp2p/go-reuseport-transport). It is
-enabled by default, but can be disabled at runtime by setting the
+[go-reuseport-transport](https://github.com/libp2p/go-reuseport-transport). It
+is enabled by default, but can be disabled at runtime by setting the
 `LIBP2P_TCP_REUSEPORT` environment variable to `false` or `0`.
 
 ## Contribute
