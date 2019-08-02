@@ -1,6 +1,8 @@
 package tcp
 
 import (
+	"github.com/libp2p/go-libp2p-core/crypto"
+	"github.com/libp2p/go-libp2p-core/peer"
 	"testing"
 
 	"github.com/libp2p/go-libp2p-core/sec/insecure"
@@ -14,17 +16,20 @@ import (
 
 func TestTcpTransport(t *testing.T) {
 	for i := 0; i < 2; i++ {
+		ia := makeInsecureTransport(t)
+		ib := makeInsecureTransport(t)
+
 		ta := NewTCPTransport(&tptu.Upgrader{
-			Secure: insecure.New("peerA"),
+			Secure: ia,
 			Muxer:  new(mplex.Transport),
 		})
 		tb := NewTCPTransport(&tptu.Upgrader{
-			Secure: insecure.New("peerB"),
+			Secure: ib,
 			Muxer:  new(mplex.Transport),
 		})
 
 		zero := "/ip4/127.0.0.1/tcp/0"
-		ttransport.SubtestTransport(t, ta, tb, zero, "peerA")
+		ttransport.SubtestTransport(t, ta, tb, zero, ia.LocalPeer())
 
 		envReuseportVal = false
 	}
@@ -39,7 +44,7 @@ func TestTcpTransportCantListenUtp(t *testing.T) {
 		}
 
 		tpt := NewTCPTransport(&tptu.Upgrader{
-			Secure: insecure.New("peerB"),
+			Secure: makeInsecureTransport(t),
 			Muxer:  new(mplex.Transport),
 		})
 
@@ -51,4 +56,16 @@ func TestTcpTransportCantListenUtp(t *testing.T) {
 		envReuseportVal = false
 	}
 	envReuseportVal = true
+}
+
+func makeInsecureTransport(t *testing.T) *insecure.Transport {
+	priv, pub, err := crypto.GenerateKeyPair(crypto.Ed25519, 256)
+	if err != nil {
+		t.Fatal(err)
+	}
+	id, err := peer.IDFromPublicKey(pub)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return insecure.NewWithIdentity(id, priv)
 }
