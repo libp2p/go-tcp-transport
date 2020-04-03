@@ -36,6 +36,27 @@ func TestTcpTransport(t *testing.T) {
 	envReuseportVal = true
 }
 
+func TestTcpTransportCantDialDNS(t *testing.T) {
+	for i := 0; i < 2; i++ {
+		dnsa, err := ma.NewMultiaddr("/dns4/example.com/tcp/1234")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		tpt := NewTCPTransport(&tptu.Upgrader{
+			Secure: makeInsecureTransport(t),
+			Muxer:  new(mplex.Transport),
+		})
+
+		if tpt.CanDial(dnsa) {
+			t.Fatal("shouldn't be able to dial dns")
+		}
+
+		envReuseportVal = false
+	}
+	envReuseportVal = true
+}
+
 func TestTcpTransportCantListenUtp(t *testing.T) {
 	for i := 0; i < 2; i++ {
 		utpa, err := ma.NewMultiaddr("/ip4/127.0.0.1/udp/0/utp")
