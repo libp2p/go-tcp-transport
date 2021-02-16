@@ -22,6 +22,30 @@ var DefaultConnectTimeout = 5 * time.Second
 
 var log = logging.Logger("tcp-tpt")
 
+const keepAlivePeriod = 30 * time.Second
+
+type canKeepAlive interface {
+	SetKeepAlive(bool) error
+	SetKeepAlivePeriod(time.Duration) error
+}
+
+var _ canKeepAlive = &net.TCPConn{}
+
+func tryKeepAlive(conn net.Conn, keepAlive bool) {
+	keepAliveConn, ok := conn.(canKeepAlive)
+	if !ok {
+		log.Errorf("Can't set TCP keepalives.")
+		return
+	}
+	if err := keepAliveConn.SetKeepAlive(keepAlive); err != nil {
+		log.Errorf("Failed to enable TCP keepalive: %s", err)
+		return
+	}
+	if err := keepAliveConn.SetKeepAlivePeriod(keepAlivePeriod); err != nil {
+		log.Errorf("Failed set keepalive period: %s", err)
+	}
+}
+
 // try to set linger on the connection, if possible.
 func tryLinger(conn net.Conn, sec int) {
 	type canLinger interface {
@@ -44,6 +68,7 @@ func (ll *lingerListener) Accept() (manet.Conn, error) {
 		return nil, err
 	}
 	tryLinger(c, ll.sec)
+	tryKeepAlive(c, true)
 	return c, nil
 }
 
@@ -106,6 +131,7 @@ func (t *TcpTransport) Dial(ctx context.Context, raddr ma.Multiaddr, p peer.ID) 
 	// linger is 0, connections are _reset_ instead of closed with a FIN.
 	// This means we can immediately reuse the 5-tuple and reconnect.
 	tryLinger(conn, 0)
+	tryKeepAlive(conn, true)
 	return t.Upgrader.UpgradeOutbound(ctx, t, conn, p)
 }
 
