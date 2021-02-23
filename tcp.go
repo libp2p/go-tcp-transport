@@ -106,11 +106,12 @@ func (t *TcpTransport) Dial(ctx context.Context, raddr ma.Multiaddr, p peer.ID) 
 	// linger is 0, connections are _reset_ instead of closed with a FIN.
 	// This means we can immediately reuse the 5-tuple and reconnect.
 	tryLinger(conn, 0)
-	return t.Upgrader.UpgradeOutbound(ctx, t, conn, p)
+	return t.Upgrader.UpgradeOutbound(ctx, t, newTracingConn(conn, true), p)
 }
 
 // UseReuseport returns true if reuseport is enabled and available.
 func (t *TcpTransport) UseReuseport() bool {
+	return false
 	return !t.DisableReuseport && ReuseportIsAvailable()
 }
 
@@ -127,7 +128,7 @@ func (t *TcpTransport) Listen(laddr ma.Multiaddr) (transport.Listener, error) {
 	if err != nil {
 		return nil, err
 	}
-	list = &lingerListener{list, 0}
+	list = &lingerListener{&tracingListener{list}, 0}
 	return t.Upgrader.UpgradeListener(t, list), nil
 }
 

@@ -1,0 +1,46 @@
+[
+  {
+    "name": "node",
+    "type": "STRING"
+  },
+  {
+    "name": "node_boot_time",
+    "type": "TIMESTAMP"
+  },
+  {
+    "name": "is_client",
+    "type": "BOOLEAN"
+  },
+  {
+    "name": "start_time",
+    "type": "TIMESTAMP"
+  },
+  {
+    "name": "end_time",
+    "type": "TIMESTAMP"
+  },
+  {
+    "name": "local_addr",
+    "type": "STRING"
+  },
+  {
+    "name": "remote_addr",
+    "type": "STRING"
+  },
+  {
+    "name": "last_rtt",
+    "type": "RECORD",
+    "fields": [
+      {
+        "name": "smoothed_rtt",
+        "type": "FLOAT",
+        "description": "in ms"
+      },
+      {
+        "name": "rtt_var",
+        "type": "FLOAT",
+        "description": "in ms"
+      }
+    ]
+  }
+]
