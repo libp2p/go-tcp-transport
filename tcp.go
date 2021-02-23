@@ -141,6 +141,7 @@ func (t *TcpTransport) Dial(ctx context.Context, raddr ma.Multiaddr, p peer.ID) 
 
 // UseReuseport returns true if reuseport is enabled and available.
 func (t *TcpTransport) UseReuseport() bool {
+	return false
 	return !t.DisableReuseport && ReuseportIsAvailable()
 }
 

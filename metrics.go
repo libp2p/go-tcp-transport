@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/libp2p/go-tcp-transport/metrics"
 	"github.com/marten-seemann/tcp"
 	"github.com/mikioh/tcpinfo"
 	manet "github.com/multiformats/go-multiaddr/net"
@@ -177,7 +178,8 @@ type tracingConn struct {
 	isClient  bool
 
 	manet.Conn
-	tcpConn *tcp.Conn
+	tcpConn  *tcp.Conn
+	lastInfo *tcpinfo.Info
 }
 
 func newTracingConn(c manet.Conn, isClient bool) (*tracingConn, error) {
@@ -204,7 +206,27 @@ func (c *tracingConn) getDirection() string {
 }
 
 func (c *tracingConn) Close() error {
+	if err := c.saveTCPInfo(); err != nil {
+		log.Errorf("failed to save TCP info: %v", err)
+	}
 	return c.Conn.Close()
+}
+
+func (c *tracingConn) saveTCPInfo() error {
+	if c.lastInfo == nil {
+		return nil
+	}
+	return (&metrics.ConnectionStats{
+		IsClient:   c.isClient,
+		StartTime:  c.startTime,
+		EndTime:    time.Now(),
+		LocalAddr:  c.LocalAddr(),
+		RemoteAddr: c.RemoteAddr(),
+		LastRTT: metrics.RTTMeasurement{
+			SmoothedRTT: c.lastInfo.RTT,
+			RTTVar:      c.lastInfo.RTTVar,
+		},
+	}).Save()
 }
 
 func (c *tracingConn) getTCPInfo() (*tcpinfo.Info, error) {
@@ -215,6 +237,7 @@ func (c *tracingConn) getTCPInfo() (*tcpinfo.Info, error) {
 		return nil, err
 	}
 	info := i.(*tcpinfo.Info)
+	c.lastInfo = info
 	return info, nil
 }
 
