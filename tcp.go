@@ -57,12 +57,12 @@ func tryLinger(conn net.Conn, sec int) {
 	}
 }
 
-type lingerListener struct {
+type tcpListener struct {
 	manet.Listener
 	sec int
 }
 
-func (ll *lingerListener) Accept() (manet.Conn, error) {
+func (ll *tcpListener) Accept() (manet.Conn, error) {
 	c, err := ll.Listener.Accept()
 	if err != nil {
 		return nil, err
@@ -153,7 +153,7 @@ func (t *TcpTransport) Listen(laddr ma.Multiaddr) (transport.Listener, error) {
 	if err != nil {
 		return nil, err
 	}
-	list = &lingerListener{list, 0}
+	list = &tcpListener{list, 0}
 	return t.Upgrader.UpgradeListener(t, list), nil
 }
 
