@@ -132,7 +132,11 @@ func (t *TcpTransport) Dial(ctx context.Context, raddr ma.Multiaddr, p peer.ID) 
 	// This means we can immediately reuse the 5-tuple and reconnect.
 	tryLinger(conn, 0)
 	tryKeepAlive(conn, true)
-	return t.Upgrader.UpgradeOutbound(ctx, t, conn, p)
+	c, err := newTracingConn(conn, true)
+	if err != nil {
+		return nil, err
+	}
+	return t.Upgrader.UpgradeOutbound(ctx, t, c, p)
 }
 
 // UseReuseport returns true if reuseport is enabled and available.
@@ -153,7 +157,7 @@ func (t *TcpTransport) Listen(laddr ma.Multiaddr) (transport.Listener, error) {
 	if err != nil {
 		return nil, err
 	}
-	list = &tcpListener{list, 0}
+	list = &tracingListener{&tcpListener{list, 0}}
 	return t.Upgrader.UpgradeListener(t, list), nil
 }
 
