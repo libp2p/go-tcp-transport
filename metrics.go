@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/mikioh/tcp"
+	"github.com/marten-seemann/tcp"
 	"github.com/mikioh/tcpinfo"
 	manet "github.com/multiformats/go-multiaddr/net"
 	"github.com/prometheus/client_golang/prometheus"
@@ -126,7 +126,7 @@ type tracingConn struct {
 }
 
 func newTracingConn(c manet.Conn, isClient bool) (*tracingConn, error) {
-	conn, err := newTCPConn(c)
+	conn, err := tcp.NewConn(c)
 	if err != nil {
 		return nil, err
 	}
