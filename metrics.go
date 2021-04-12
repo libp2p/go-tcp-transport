@@ -12,13 +12,22 @@ import (
 )
 
 var (
-	newConns    *prometheus.CounterVec
-	closedConns *prometheus.CounterVec
+	newConns      *prometheus.CounterVec
+	closedConns   *prometheus.CounterVec
+	segsSentDesc  *prometheus.Desc
+	segsRcvdDesc  *prometheus.Desc
+	bytesSentDesc *prometheus.Desc
+	bytesRcvdDesc *prometheus.Desc
 )
 
 var collector *aggregatingCollector
 
 func init() {
+	segsSentDesc = prometheus.NewDesc("tcp_sent_segments_total", "TCP segments sent", nil, nil)
+	segsRcvdDesc = prometheus.NewDesc("tcp_rcvd_segments_total", "TCP segments received", nil, nil)
+	bytesSentDesc = prometheus.NewDesc("tcp_sent_bytes", "TCP bytes sent", nil, nil)
+	bytesRcvdDesc = prometheus.NewDesc("tcp_rcvd_bytes", "TCP bytes received", nil, nil)
+
 	collector = newAggregatingCollector()
 	prometheus.MustRegister(collector)
 
@@ -84,11 +93,21 @@ func (c *aggregatingCollector) removeConn(id uint64) {
 func (c *aggregatingCollector) Describe(descs chan<- *prometheus.Desc) {
 	descs <- c.rtts.Desc()
 	descs <- c.connDurations.Desc()
+	if hasSegmentCounter {
+		descs <- segsSentDesc
+		descs <- segsRcvdDesc
+	}
+	if hasByteCounter {
+		descs <- bytesSentDesc
+		descs <- bytesRcvdDesc
+	}
 }
 
 func (c *aggregatingCollector) Collect(metrics chan<- prometheus.Metric) {
 	now := time.Now()
 	c.mutex.Lock()
+	var segsSent, segsRcvd uint64
+	var bytesSent, bytesRcvd uint64
 	for _, conn := range c.conns {
 		info, err := conn.getTCPInfo()
 		if err != nil {
@@ -99,6 +118,14 @@ func (c *aggregatingCollector) Collect(metrics chan<- prometheus.Metric) {
 			log.Errorf("Failed to get TCP info: %s", err)
 			continue
 		}
+		if hasSegmentCounter {
+			segsSent += getSegmentsSent(info)
+			segsRcvd += getSegmentsRcvd(info)
+		}
+		if hasByteCounter {
+			bytesSent += getBytesSent(info)
+			bytesRcvd += getBytesRcvd(info)
+		}
 		c.rtts.Observe(info.RTT.Seconds())
 		c.connDurations.Observe(now.Sub(conn.startTime).Seconds())
 		if info.State == tcpinfo.Closed {
@@ -108,6 +135,34 @@ func (c *aggregatingCollector) Collect(metrics chan<- prometheus.Metric) {
 	c.mutex.Unlock()
 	metrics <- c.rtts
 	metrics <- c.connDurations
+	if hasSegmentCounter {
+		segsSentMetric, err := prometheus.NewConstMetric(segsSentDesc, prometheus.CounterValue, float64(segsSent))
+		if err != nil {
+			log.Errorf("creating tcp_sent_segments_total metric failed: %v", err)
+			return
+		}
+		segsRcvdMetric, err := prometheus.NewConstMetric(segsRcvdDesc, prometheus.CounterValue, float64(segsRcvd))
+		if err != nil {
+			log.Errorf("creating tcp_rcvd_segments_total metric failed: %v", err)
+			return
+		}
+		metrics <- segsSentMetric
+		metrics <- segsRcvdMetric
+	}
+	if hasByteCounter {
+		bytesSentMetric, err := prometheus.NewConstMetric(bytesSentDesc, prometheus.CounterValue, float64(bytesSent))
+		if err != nil {
+			log.Errorf("creating tcp_sent_bytes metric failed: %v", err)
+			return
+		}
+		bytesRcvdMetric, err := prometheus.NewConstMetric(bytesRcvdDesc, prometheus.CounterValue, float64(bytesRcvd))
+		if err != nil {
+			log.Errorf("creating tcp_rcvd_bytes metric failed: %v", err)
+			return
+		}
+		metrics <- bytesSentMetric
+		metrics <- bytesRcvdMetric
+	}
 }
 
 func (c *aggregatingCollector) closedConn(conn *tracingConn) {
