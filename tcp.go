@@ -3,6 +3,7 @@ package tcp
 import (
 	"context"
 	"net"
+	"runtime"
 	"time"
 
 	logging "github.com/ipfs/go-log"
@@ -41,8 +42,11 @@ func tryKeepAlive(conn net.Conn, keepAlive bool) {
 		log.Errorf("Failed to enable TCP keepalive: %s", err)
 		return
 	}
-	if err := keepAliveConn.SetKeepAlivePeriod(keepAlivePeriod); err != nil {
-		log.Errorf("Failed set keepalive period: %s", err)
+
+	if runtime.GOOS != "openbsd" {
+		if err := keepAliveConn.SetKeepAlivePeriod(keepAlivePeriod); err != nil {
+			log.Errorf("Failed set keepalive period: %s", err)
+		}
 	}
 }
 
