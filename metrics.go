@@ -123,7 +123,6 @@ func (c *aggregatingCollector) cron() {
 			info, err := conn.getTCPInfo()
 			if err != nil {
 				if strings.Contains(err.Error(), "use of closed network connection") {
-					c.closedConn(conn)
 					continue
 				}
 				log.Errorf("Failed to get TCP info: %s", err)
@@ -139,9 +138,6 @@ func (c *aggregatingCollector) cron() {
 			}
 			c.rtts.Observe(info.RTT.Seconds())
 			c.connDurations.Observe(now.Sub(conn.startTime).Seconds())
-			if info.State == tcpinfo.Closed {
-				c.closedConn(conn)
-			}
 		}
 		c.mutex.Unlock()
 	}
@@ -183,9 +179,11 @@ func (c *aggregatingCollector) Collect(metrics chan<- prometheus.Metric) {
 	}
 }
 
-func (c *aggregatingCollector) closedConn(conn *tracingConn) {
+func (c *aggregatingCollector) ClosedConn(conn *tracingConn, direction string) {
+	c.mutex.Lock()
 	collector.removeConn(conn.id)
-	closedConns.WithLabelValues(conn.getDirection()).Inc()
+	c.mutex.Unlock()
+	closedConns.WithLabelValues(direction).Inc()
 }
 
 type tracingConn struct {
@@ -222,6 +220,7 @@ func (c *tracingConn) getDirection() string {
 }
 
 func (c *tracingConn) Close() error {
+	collector.ClosedConn(c, c.getDirection())
 	return c.Conn.Close()
 }
 
