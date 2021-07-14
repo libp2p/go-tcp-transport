@@ -2,7 +2,9 @@ package tcp
 
 import (
 	"context"
+	"errors"
 	"net"
+	"os"
 	"runtime"
 	"time"
 
@@ -39,13 +41,22 @@ func tryKeepAlive(conn net.Conn, keepAlive bool) {
 		return
 	}
 	if err := keepAliveConn.SetKeepAlive(keepAlive); err != nil {
-		log.Errorf("Failed to enable TCP keepalive: %s", err)
+		// Sometimes we seem to get "invalid argument" results from this function on Darwin.
+		// This might be due to a closed connection, but I can't reproduce that on Linux.
+		//
+		// But there's nothing we can do about invalid arguments, so we'll drop this to a
+		// debug.
+		if errors.Is(err, os.ErrInvalid) {
+			log.Debugw("failed to enable TCP keepalive", "error", err)
+		} else {
+			log.Errorw("failed to enable TCP keepalive", "error", err)
+		}
 		return
 	}
 
 	if runtime.GOOS != "openbsd" {
 		if err := keepAliveConn.SetKeepAlivePeriod(keepAlivePeriod); err != nil {
-			log.Errorf("Failed set keepalive period: %s", err)
+			log.Errorw("failed set keepalive period", "error", err)
 		}
 	}
 }
