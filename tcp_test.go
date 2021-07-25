@@ -1,23 +1,24 @@
 package tcp
 
 import (
-	"github.com/libp2p/go-libp2p-core/crypto"
-	"github.com/libp2p/go-libp2p-core/peer"
 	"testing"
 
+	csms "github.com/libp2p/go-conn-security-multistream"
+	"github.com/libp2p/go-libp2p-core/crypto"
+	"github.com/libp2p/go-libp2p-core/peer"
+	"github.com/libp2p/go-libp2p-core/sec"
 	"github.com/libp2p/go-libp2p-core/sec/insecure"
 	mplex "github.com/libp2p/go-libp2p-mplex"
-	tptu "github.com/libp2p/go-libp2p-transport-upgrader"
-
 	ttransport "github.com/libp2p/go-libp2p-testing/suites/transport"
+	tptu "github.com/libp2p/go-libp2p-transport-upgrader"
 
 	ma "github.com/multiformats/go-multiaddr"
 )
 
 func TestTcpTransport(t *testing.T) {
 	for i := 0; i < 2; i++ {
-		ia := makeInsecureTransport(t)
-		ib := makeInsecureTransport(t)
+		peerA, ia := makeInsecureMuxer(t)
+		_, ib := makeInsecureMuxer(t)
 
 		ta := NewTCPTransport(&tptu.Upgrader{
 			Secure: ia,
@@ -29,7 +30,7 @@ func TestTcpTransport(t *testing.T) {
 		})
 
 		zero := "/ip4/127.0.0.1/tcp/0"
-		ttransport.SubtestTransport(t, ta, tb, zero, ia.LocalPeer())
+		ttransport.SubtestTransport(t, ta, tb, zero, peerA)
 
 		envReuseportVal = false
 	}
@@ -43,8 +44,9 @@ func TestTcpTransportCantDialDNS(t *testing.T) {
 			t.Fatal(err)
 		}
 
+		_, sm := makeInsecureMuxer(t)
 		tpt := NewTCPTransport(&tptu.Upgrader{
-			Secure: makeInsecureTransport(t),
+			Secure: sm,
 			Muxer:  new(mplex.Transport),
 		})
 
@@ -64,8 +66,9 @@ func TestTcpTransportCantListenUtp(t *testing.T) {
 			t.Fatal(err)
 		}
 
+		_, sm := makeInsecureMuxer(t)
 		tpt := NewTCPTransport(&tptu.Upgrader{
-			Secure: makeInsecureTransport(t),
+			Secure: sm,
 			Muxer:  new(mplex.Transport),
 		})
 
@@ -79,14 +82,17 @@ func TestTcpTransportCantListenUtp(t *testing.T) {
 	envReuseportVal = true
 }
 
-func makeInsecureTransport(t *testing.T) *insecure.Transport {
-	priv, pub, err := crypto.GenerateKeyPair(crypto.Ed25519, 256)
+func makeInsecureMuxer(t *testing.T) (peer.ID, sec.SecureMuxer) {
+	t.Helper()
+	priv, _, err := crypto.GenerateKeyPair(crypto.Ed25519, 256)
 	if err != nil {
 		t.Fatal(err)
 	}
-	id, err := peer.IDFromPublicKey(pub)
+	id, err := peer.IDFromPrivateKey(priv)
 	if err != nil {
 		t.Fatal(err)
 	}
-	return insecure.NewWithIdentity(id, priv)
+	var secMuxer csms.SSMuxer
+	secMuxer.AddTransport(insecure.ID, insecure.NewWithIdentity(id, priv))
+	return id, &secMuxer
 }
