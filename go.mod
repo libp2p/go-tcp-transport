@@ -5,10 +5,10 @@ go 1.16
 require (
 	github.com/ipfs/go-log v1.0.4
 	github.com/libp2p/go-conn-security-multistream v0.2.1
-	github.com/libp2p/go-libp2p-core v0.8.6
+	github.com/libp2p/go-libp2p-core v0.9.1-0.20210822162035-9ca31a7cb3a5
 	github.com/libp2p/go-libp2p-mplex v0.4.1
 	github.com/libp2p/go-libp2p-testing v0.4.2
-	github.com/libp2p/go-libp2p-transport-upgrader v0.4.6
+	github.com/libp2p/go-libp2p-transport-upgrader v0.4.7-0.20210822163034-accfe8dc3bd6
 	github.com/libp2p/go-netroute v0.1.5 // indirect
 	github.com/libp2p/go-reuseport v0.0.2
 	github.com/libp2p/go-reuseport-transport v0.0.5

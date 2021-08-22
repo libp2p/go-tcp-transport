@@ -8,12 +8,13 @@ import (
 	"runtime"
 	"time"
 
-	logging "github.com/ipfs/go-log"
+	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/transport"
 	tptu "github.com/libp2p/go-libp2p-transport-upgrader"
 	rtpt "github.com/libp2p/go-reuseport-transport"
 
+	logging "github.com/ipfs/go-log"
 	ma "github.com/multiformats/go-multiaddr"
 	mafmt "github.com/multiformats/go-multiaddr-fmt"
 	manet "github.com/multiformats/go-multiaddr/net"
@@ -150,6 +151,9 @@ func (t *TcpTransport) Dial(ctx context.Context, raddr ma.Multiaddr, p peer.ID) 
 	c, err := newTracingConn(conn, true)
 	if err != nil {
 		return nil, err
+	}
+	if ok, isClient, _ := network.GetSimultaneousConnect(ctx); ok && !isClient {
+		return t.Upgrader.UpgradeInboundWithPeerCheck(ctx, t, c, p)
 	}
 	return t.Upgrader.UpgradeOutbound(ctx, t, c, p)
 }
