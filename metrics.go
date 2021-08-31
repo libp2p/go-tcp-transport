@@ -1,3 +1,6 @@
+//go:build !windows
+// +build !windows
+
 package tcp
 
 import (
@@ -248,6 +251,10 @@ func (c *tracingConn) getTCPInfo() (*tcpinfo.Info, error) {
 
 type tracingListener struct {
 	manet.Listener
+}
+
+func newTracingListener(l manet.Listener) *tracingListener {
+	return &tracingListener{Listener: l}
 }
 
 func (l *tracingListener) Accept() (manet.Conn, error) {
