@@ -172,7 +172,7 @@ func (t *TcpTransport) Listen(laddr ma.Multiaddr) (transport.Listener, error) {
 	if err != nil {
 		return nil, err
 	}
-	list = &tracingListener{&tcpListener{list, 0}}
+	list = newTracingListener(&tcpListener{list, 0})
 	return t.Upgrader.UpgradeListener(t, list), nil
 }
 
