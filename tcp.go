@@ -121,12 +121,9 @@ func (t *TcpTransport) CanDial(addr ma.Multiaddr) bool {
 func (t *TcpTransport) maDial(ctx context.Context, raddr ma.Multiaddr) (manet.Conn, error) {
 	// Apply the deadline iff applicable
 	if t.ConnectTimeout > 0 {
-		deadline := time.Now().Add(t.ConnectTimeout)
-		if d, ok := ctx.Deadline(); !ok || deadline.Before(d) {
-			var cancel func()
-			ctx, cancel = context.WithDeadline(ctx, deadline)
-			defer cancel()
-		}
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, t.ConnectTimeout)
+		defer cancel()
 	}
 
 	if t.UseReuseport() {
