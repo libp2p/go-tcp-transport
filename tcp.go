@@ -8,12 +8,14 @@ import (
 	"runtime"
 	"time"
 
-	logging "github.com/ipfs/go-log/v2"
+	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/transport"
+
 	tptu "github.com/libp2p/go-libp2p-transport-upgrader"
 	rtpt "github.com/libp2p/go-reuseport-transport"
 
+	logging "github.com/ipfs/go-log/v2"
 	ma "github.com/multiformats/go-multiaddr"
 	mafmt "github.com/multiformats/go-multiaddr-fmt"
 	manet "github.com/multiformats/go-multiaddr/net"
@@ -148,7 +150,11 @@ func (t *TcpTransport) Dial(ctx context.Context, raddr ma.Multiaddr, p peer.ID) 
 	if err != nil {
 		return nil, err
 	}
-	return t.Upgrader.UpgradeOutbound(ctx, t, c, p)
+	direction := network.DirOutbound
+	if ok, isClient, _ := network.GetSimultaneousConnect(ctx); ok && !isClient {
+		direction = network.DirInbound
+	}
+	return t.Upgrader.Upgrade(ctx, t, c, direction, p)
 }
 
 // UseReuseport returns true if reuseport is enabled and available.
