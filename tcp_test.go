@@ -15,21 +15,43 @@ import (
 	ma "github.com/multiformats/go-multiaddr"
 )
 
-func TestTcpTransport(t *testing.T) {
+func TestTcpTransportWithSecureMuxer(t *testing.T) {
 	for i := 0; i < 2; i++ {
 		peerA, ia := makeInsecureMuxer(t)
 		_, ib := makeInsecureMuxer(t)
 
 		ta := NewTCPTransport(&tptu.Upgrader{
-			Secure: ia,
-			Muxer:  new(mplex.Transport),
+			SecureMuxer: ia,
+			Muxer:       new(mplex.Transport),
 		})
 		tb := NewTCPTransport(&tptu.Upgrader{
-			Secure: ib,
-			Muxer:  new(mplex.Transport),
+			SecureMuxer: ib,
+			Muxer:       new(mplex.Transport),
 		})
 
 		zero := "/ip4/127.0.0.1/tcp/0"
+		ttransport.SubtestTransport(t, ta, tb, zero, peerA)
+
+		envReuseportVal = false
+	}
+	envReuseportVal = true
+}
+
+func TestTcpTransportWithSecureTransport(t *testing.T) {
+	for i := 0; i < 2; i++ {
+		peerA, ia := makeInsecureTransport(t)
+		_, ib := makeInsecureTransport(t)
+
+		ta := NewTCPTransport(&tptu.Upgrader{
+			SecureTransport: ia,
+			Muxer:           new(mplex.Transport),
+		})
+		tb := NewTCPTransport(&tptu.Upgrader{
+			SecureTransport: ib,
+			Muxer:           new(mplex.Transport),
+		})
+
+		zero := "/ip4/127.0.0.1/tcp/0/plaintextv2"
 		ttransport.SubtestTransport(t, ta, tb, zero, peerA)
 
 		envReuseportVal = false
@@ -46,8 +68,8 @@ func TestTcpTransportCantDialDNS(t *testing.T) {
 
 		_, sm := makeInsecureMuxer(t)
 		tpt := NewTCPTransport(&tptu.Upgrader{
-			Secure: sm,
-			Muxer:  new(mplex.Transport),
+			SecureMuxer: sm,
+			Muxer:       new(mplex.Transport),
 		})
 
 		if tpt.CanDial(dnsa) {
@@ -68,12 +90,10 @@ func TestTcpTransportCantListenUtp(t *testing.T) {
 
 		_, sm := makeInsecureMuxer(t)
 		tpt := NewTCPTransport(&tptu.Upgrader{
-			Secure: sm,
-			Muxer:  new(mplex.Transport),
+			SecureMuxer: sm,
+			Muxer:       new(mplex.Transport),
 		})
-
-		_, err = tpt.Listen(utpa)
-		if err == nil {
+		if _, err := tpt.Listen(utpa); err == nil {
 			t.Fatal("shouldnt be able to listen on utp addr with tcp transport")
 		}
 
@@ -84,6 +104,14 @@ func TestTcpTransportCantListenUtp(t *testing.T) {
 
 func makeInsecureMuxer(t *testing.T) (peer.ID, sec.SecureMuxer) {
 	t.Helper()
+	id, tr := makeInsecureTransport(t)
+	var secMuxer csms.SSMuxer
+	secMuxer.AddTransport(insecure.ID, tr)
+	return id, &secMuxer
+}
+
+func makeInsecureTransport(t *testing.T) (peer.ID, sec.SecureTransport) {
+	t.Helper()
 	priv, _, err := crypto.GenerateKeyPair(crypto.Ed25519, 256)
 	if err != nil {
 		t.Fatal(err)
@@ -92,7 +120,5 @@ func makeInsecureMuxer(t *testing.T) (peer.ID, sec.SecureMuxer) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	var secMuxer csms.SSMuxer
-	secMuxer.AddTransport(insecure.ID, insecure.NewWithIdentity(id, priv))
-	return id, &secMuxer
+	return id, insecure.NewWithIdentity(id, priv)
 }
