@@ -3,7 +3,7 @@ module github.com/libp2p/go-tcp-transport
 go 1.16
 
 require (
-	github.com/ipfs/go-log v1.0.4
+	github.com/ipfs/go-log/v2 v2.3.0
 	github.com/libp2p/go-conn-security-multistream v0.2.1
 	github.com/libp2p/go-libp2p-core v0.8.6
 	github.com/libp2p/go-libp2p-mplex v0.4.1
