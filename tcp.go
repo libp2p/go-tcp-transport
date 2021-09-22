@@ -99,6 +99,9 @@ type TcpTransport struct {
 	// TCP connect timeout
 	ConnectTimeout time.Duration
 
+	protos      []ma.Protocol
+	dialMatcher mafmt.Pattern
+
 	reuse rtpt.Transport
 }
 
@@ -107,15 +110,27 @@ var _ transport.Transport = &TcpTransport{}
 // NewTCPTransport creates a tcp transport object that tracks dialers and listeners
 // created. It represents an entire tcp stack (though it might not necessarily be)
 func NewTCPTransport(upgrader *tptu.Upgrader) *TcpTransport {
-	return &TcpTransport{Upgrader: upgrader, ConnectTimeout: DefaultConnectTimeout}
+	protos := []ma.Protocol{ma.ProtocolWithCode(ma.P_TCP)}
+	var dialMatcher mafmt.Pattern
+	// In case the upgrader muxes security protocols, it returns the zero value of ma.Protocol.
+	// This check can be removed once we remove support for non-security-enabled multiaddrs.
+	if secProto := upgrader.SecurityProtocol(); secProto.Code != 0 {
+		protos = append(protos, secProto)
+		dialMatcher = mafmt.And(mafmt.IP, mafmt.Base(ma.P_TCP), mafmt.Base(secProto.Code))
+	} else {
+		dialMatcher = mafmt.And(mafmt.IP, mafmt.Base(ma.P_TCP))
+	}
+	return &TcpTransport{
+		Upgrader:       upgrader,
+		ConnectTimeout: DefaultConnectTimeout,
+		protos:         protos,
+		dialMatcher:    dialMatcher,
+	}
 }
 
-var dialMatcher = mafmt.And(mafmt.IP, mafmt.Base(ma.P_TCP))
-
-// CanDial returns true if this transport believes it can dial the given
-// multiaddr.
+// CanDial returns true if this transport believes it can dial the given multiaddr.
 func (t *TcpTransport) CanDial(addr ma.Multiaddr) bool {
-	return dialMatcher.Matches(addr)
+	return t.dialMatcher.Matches(addr)
 }
 
 func (t *TcpTransport) maDial(ctx context.Context, raddr ma.Multiaddr) (manet.Conn, error) {
@@ -173,9 +188,9 @@ func (t *TcpTransport) Listen(laddr ma.Multiaddr) (transport.Listener, error) {
 	return t.Upgrader.UpgradeListener(t, list), nil
 }
 
-// Protocols returns the list of terminal protocols this transport can dial.
-func (t *TcpTransport) Protocols() []int {
-	return []int{ma.P_TCP}
+// Protocols returns the protocols this transport can dial.
+func (t *TcpTransport) Protocols() []ma.Protocol {
+	return t.protos
 }
 
 // Proxy always returns false for the TCP transport.
