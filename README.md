@@ -96,11 +96,6 @@ Examples:
 |----------------------------|----------------------------------------------------|
 | `/ip4/1.2.3.4/tcp/1234`    | IPv4: 1.2.3.4, TCP port 1234                       |
 | `/ip6/::1/tcp/1234`        | IPv6 loopback, TCP port 1234                       |
-| `/dns4/example.com/tcp/80` | DNS over IPv4, hostname `example.com`, TCP port 80 |
-
-
-Support for IP layer protocols is provided by the
-[go-multiaddr-net](https://github.com/multiformats/go-multiaddr-net) module.
 
 ## Security and Multiplexing
 
