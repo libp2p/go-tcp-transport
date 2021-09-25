@@ -78,9 +78,8 @@ transport. To add multiple tranports, use `ChainOptions`:
 ``` go
 // TCP and QUIC:
 h, err := libp2p.New(ctx,
-    libp2p.ChainOptions(
-        libp2p.Transport(tcp.NewTCPTransport),
-        libp2p.Transport(quic.NewTransport)) // see https://github.com/libp2p/go-libp2p-quic-transport
+    libp2p.Transport(tcp.NewTCPTransport),
+    libp2p.Transport(quic.NewTransport), // see https://github.com/libp2p/go-libp2p-quic-transport
 )
 ```
 
