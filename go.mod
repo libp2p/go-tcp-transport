@@ -18,4 +18,5 @@ require (
 	github.com/multiformats/go-multiaddr-fmt v0.1.0
 	github.com/multiformats/go-multihash v0.0.15 // indirect
 	github.com/prometheus/client_golang v1.10.0
+	github.com/stretchr/testify v1.7.0
 )

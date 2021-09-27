@@ -21,9 +21,7 @@ import (
 	manet "github.com/multiformats/go-multiaddr/net"
 )
 
-// DefaultConnectTimeout is the (default) maximum amount of time the TCP
-// transport will spend on the initial TCP connect before giving up.
-var DefaultConnectTimeout = 5 * time.Second
+const defaultConnectTimeout = 5 * time.Second
 
 var log = logging.Logger("tcp-tpt")
 
@@ -89,6 +87,21 @@ func (ll *tcpListener) Accept() (manet.Conn, error) {
 	return c, nil
 }
 
+type Option func(*TcpTransport) error
+
+func DisableReuseport() Option {
+	return func(tr *TcpTransport) error {
+		tr.disableReuseport = true
+		return nil
+	}
+}
+func WithConnectionTimeout(d time.Duration) Option {
+	return func(tr *TcpTransport) error {
+		tr.connectTimeout = d
+		return nil
+	}
+}
+
 // TcpTransport is the TCP transport.
 type TcpTransport struct {
 	// Connection upgrader for upgrading insecure stream connections to
@@ -96,10 +109,10 @@ type TcpTransport struct {
 	Upgrader *tptu.Upgrader
 
 	// Explicitly disable reuseport.
-	DisableReuseport bool
+	disableReuseport bool
 
 	// TCP connect timeout
-	ConnectTimeout time.Duration
+	connectTimeout time.Duration
 
 	reuse rtpt.Transport
 }
@@ -107,9 +120,18 @@ type TcpTransport struct {
 var _ transport.Transport = &TcpTransport{}
 
 // NewTCPTransport creates a tcp transport object that tracks dialers and listeners
-// created. It represents an entire tcp stack (though it might not necessarily be)
-func NewTCPTransport(upgrader *tptu.Upgrader) *TcpTransport {
-	return &TcpTransport{Upgrader: upgrader, ConnectTimeout: DefaultConnectTimeout}
+// created. It represents an entire TCP stack (though it might not necessarily be).
+func NewTCPTransport(upgrader *tptu.Upgrader, opts ...Option) (*TcpTransport, error) {
+	tr := &TcpTransport{
+		Upgrader:       upgrader,
+		connectTimeout: defaultConnectTimeout, // can be set by using the WithConnectionTimeout option
+	}
+	for _, o := range opts {
+		if err := o(tr); err != nil {
+			return nil, err
+		}
+	}
+	return tr, nil
 }
 
 var dialMatcher = mafmt.And(mafmt.IP, mafmt.Base(ma.P_TCP))
@@ -122,9 +144,9 @@ func (t *TcpTransport) CanDial(addr ma.Multiaddr) bool {
 
 func (t *TcpTransport) maDial(ctx context.Context, raddr ma.Multiaddr) (manet.Conn, error) {
 	// Apply the deadline iff applicable
-	if t.ConnectTimeout > 0 {
+	if t.connectTimeout > 0 {
 		var cancel context.CancelFunc
-		ctx, cancel = context.WithTimeout(ctx, t.ConnectTimeout)
+		ctx, cancel = context.WithTimeout(ctx, t.connectTimeout)
 		defer cancel()
 	}
 
@@ -159,7 +181,7 @@ func (t *TcpTransport) Dial(ctx context.Context, raddr ma.Multiaddr, p peer.ID) 
 
 // UseReuseport returns true if reuseport is enabled and available.
 func (t *TcpTransport) UseReuseport() bool {
-	return !t.DisableReuseport && ReuseportIsAvailable()
+	return !t.disableReuseport && ReuseportIsAvailable()
 }
 
 func (t *TcpTransport) maListen(laddr ma.Multiaddr) (manet.Listener, error) {
