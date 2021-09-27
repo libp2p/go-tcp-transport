@@ -8,7 +8,8 @@ import (
 )
 
 // envReuseport is the env variable name used to turn off reuse port.
-// It default to true.
+// It defaults to true.
+// Deprecated: use the constructor option DisableReuseport instead.
 const envReuseport = "LIBP2P_TCP_REUSEPORT"
 
 // envReuseportVal stores the value of envReuseport. defaults to true.
@@ -16,6 +17,9 @@ var envReuseportVal = true
 
 func init() {
 	v := strings.ToLower(os.Getenv(envReuseport))
+	if len(v) > 0 {
+		log.Warn("LIBP2P_TCP_REUSEPORT is deprecated. Use the DisableReuseport constructor option instead.")
+	}
 	if v == "false" || v == "f" || v == "0" {
 		envReuseportVal = false
 		log.Infof("REUSEPORT disabled (LIBP2P_TCP_REUSEPORT=%s)", v)
