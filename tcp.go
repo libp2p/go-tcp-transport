@@ -83,6 +83,10 @@ func (ll *tcpListener) Accept() (manet.Conn, error) {
 	}
 	tryLinger(c, ll.sec)
 	tryKeepAlive(c, true)
+	// We're not calling OpenConnection in the resource manager here,
+	// since the manet.Conn doesn't allow us to save the scope.
+	// It's the caller's (usually the go-libp2p-transport-upgrader) responsibility
+	// to call the resource manager.
 	return c, nil
 }
 
@@ -94,6 +98,7 @@ func DisableReuseport() Option {
 		return nil
 	}
 }
+
 func WithConnectionTimeout(d time.Duration) Option {
 	return func(tr *TcpTransport) error {
 		tr.connectTimeout = d
@@ -113,6 +118,8 @@ type TcpTransport struct {
 	// TCP connect timeout
 	connectTimeout time.Duration
 
+	rcmgr network.ResourceManager
+
 	reuse rtpt.Transport
 }
 
@@ -120,10 +127,14 @@ var _ transport.Transport = &TcpTransport{}
 
 // NewTCPTransport creates a tcp transport object that tracks dialers and listeners
 // created. It represents an entire TCP stack (though it might not necessarily be).
-func NewTCPTransport(upgrader transport.Upgrader, opts ...Option) (*TcpTransport, error) {
+func NewTCPTransport(upgrader transport.Upgrader, rcmgr network.ResourceManager, opts ...Option) (*TcpTransport, error) {
+	if rcmgr == nil {
+		rcmgr = network.NullResourceManager
+	}
 	tr := &TcpTransport{
 		Upgrader:       upgrader,
 		connectTimeout: defaultConnectTimeout, // can be set by using the WithConnectionTimeout option
+		rcmgr:          rcmgr,
 	}
 	for _, o := range opts {
 		if err := o(tr); err != nil {
@@ -158,8 +169,19 @@ func (t *TcpTransport) maDial(ctx context.Context, raddr ma.Multiaddr) (manet.Co
 
 // Dial dials the peer at the remote address.
 func (t *TcpTransport) Dial(ctx context.Context, raddr ma.Multiaddr, p peer.ID) (transport.CapableConn, error) {
+	connScope, err := t.rcmgr.OpenConnection(network.DirOutbound, true)
+	if err != nil {
+		log.Debugw("resource manager blocked outgoing connection", "peer", p, "addr", raddr, "error", err)
+		return nil, err
+	}
+	if err := connScope.SetPeer(p); err != nil {
+		log.Debugw("resource manager blocked outgoing connection for peer", "peer", p, "addr", raddr, "error", err)
+		connScope.Done()
+		return nil, err
+	}
 	conn, err := t.maDial(ctx, raddr)
 	if err != nil {
+		connScope.Done()
 		return nil, err
 	}
 	// Set linger to 0 so we never get stuck in the TIME-WAIT state. When
@@ -169,13 +191,14 @@ func (t *TcpTransport) Dial(ctx context.Context, raddr ma.Multiaddr, p peer.ID) 
 	tryKeepAlive(conn, true)
 	c, err := newTracingConn(conn, true)
 	if err != nil {
+		connScope.Done()
 		return nil, err
 	}
 	direction := network.DirOutbound
 	if ok, isClient, _ := network.GetSimultaneousConnect(ctx); ok && !isClient {
 		direction = network.DirInbound
 	}
-	return t.Upgrader.Upgrade(ctx, t, c, direction, p)
+	return t.Upgrader.Upgrade(ctx, t, c, direction, p, connScope)
 }
 
 // UseReuseport returns true if reuseport is enabled and available.
