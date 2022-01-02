@@ -12,7 +12,6 @@ import (
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/transport"
 
-	tptu "github.com/libp2p/go-libp2p-transport-upgrader"
 	rtpt "github.com/libp2p/go-reuseport-transport"
 
 	logging "github.com/ipfs/go-log/v2"
@@ -106,7 +105,7 @@ func WithConnectionTimeout(d time.Duration) Option {
 type TcpTransport struct {
 	// Connection upgrader for upgrading insecure stream connections to
 	// secure multiplex connections.
-	Upgrader *tptu.Upgrader
+	Upgrader transport.Upgrader
 
 	// Explicitly disable reuseport.
 	disableReuseport bool
@@ -121,7 +120,7 @@ var _ transport.Transport = &TcpTransport{}
 
 // NewTCPTransport creates a tcp transport object that tracks dialers and listeners
 // created. It represents an entire TCP stack (though it might not necessarily be).
-func NewTCPTransport(upgrader *tptu.Upgrader, opts ...Option) (*TcpTransport, error) {
+func NewTCPTransport(upgrader transport.Upgrader, opts ...Option) (*TcpTransport, error) {
 	tr := &TcpTransport{
 		Upgrader:       upgrader,
 		connectTimeout: defaultConnectTimeout, // can be set by using the WithConnectionTimeout option
