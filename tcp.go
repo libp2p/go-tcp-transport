@@ -49,9 +49,16 @@ func tryKeepAlive(conn net.Conn, keepAlive bool) {
 		if errors.Is(err, os.ErrInvalid) {
 			log.Debugw("failed to enable TCP keepalive", "error", err)
 		} else {
-			log.Errorw("failed to enable TCP keepalive", "error", err)
+			// see if the connection is closed
+			conn.SetReadDeadline(time.Now().Add(500 * time.Millisecond))
+			_, rerr := conn.Read([]byte{0})
+			conn.SetReadDeadline(time.Time{})
+			log.Errorw("failed to enable TCP keepalive", "error", err, "read error", rerr)
+			log.Errorf("error details: %#v, %+v\n", err, err)
 		}
 		return
+	} else {
+		log.Debugw("successfully enabled TCP keepalive")
 	}
 
 	if runtime.GOOS != "openbsd" {
