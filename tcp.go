@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"runtime"
+	"syscall"
 	"time"
 
 	"github.com/libp2p/go-libp2p-core/network"
@@ -45,7 +46,7 @@ func tryKeepAlive(conn net.Conn, keepAlive bool) {
 		//
 		// But there's nothing we can do about invalid arguments, so we'll drop this to a
 		// debug.
-		if errors.Is(err, os.ErrInvalid) {
+		if errors.Is(err, os.ErrInvalid) || errors.Is(err, syscall.EINVAL) {
 			log.Debugw("failed to enable TCP keepalive", "error", err)
 		} else {
 			log.Errorw("failed to enable TCP keepalive", "error", err)
