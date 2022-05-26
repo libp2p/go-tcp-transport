@@ -2,7 +2,10 @@ module github.com/libp2p/go-tcp-transport
 
 go 1.17
 
-require github.com/libp2p/go-libp2p v0.20.0
+require (
+	github.com/libp2p/go-libp2p v0.20.0
+	github.com/libp2p/go-libp2p-core v0.16.1
+)
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -18,7 +21,6 @@ require (
 	github.com/ipfs/go-log/v2 v2.5.1 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
 	github.com/libp2p/go-buffer-pool v0.0.2 // indirect
-	github.com/libp2p/go-libp2p-core v0.16.1 // indirect
 	github.com/libp2p/go-netroute v0.2.0 // indirect
 	github.com/libp2p/go-openssl v0.0.7 // indirect
 	github.com/libp2p/go-reuseport v0.2.0 // indirect

@@ -4,6 +4,9 @@ package tcp
 import (
 	"time"
 
+	"github.com/libp2p/go-libp2p-core/network"
+	"github.com/libp2p/go-libp2p-core/transport"
+
 	"github.com/libp2p/go-libp2p/p2p/transport/tcp"
 )
 
@@ -23,3 +26,10 @@ func WithConnectionTimeout(d time.Duration) Option {
 // TcpTransport is the TCP transport.
 // Deprecated: use github.com/libp2p/go-libp2p/p2p/transport/tcp.TcpTransport instead.
 type TcpTransport = tcp.TcpTransport
+
+// NewTCPTransport creates a tcp transport object that tracks dialers and listeners
+// created. It represents an entire TCP stack (though it might not necessarily be).
+// Deprecated: use github.com/libp2p/go-libp2p/p2p/transport/tcp.NewTCPTransport instead.
+func NewTCPTransport(upgrader transport.Upgrader, rcmgr network.ResourceManager, opts ...Option) (*TcpTransport, error) {
+	return tcp.NewTCPTransport(upgrader, rcmgr, opts...)
+}
